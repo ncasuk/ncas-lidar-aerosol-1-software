@@ -4,8 +4,10 @@ import read_data
 import datetime as dt
 import glob
 
-ascii_direc = '/media/sf_Data/cimel-lidar/ExportData/'
-netcdf_direc = '/media/sf_Data/cimel-lidar/NetcdfData/'
+#ascii_direc = '/media/sf_Data/cimel-lidar/ExportData/'
+ascii_direc = '/gws/pw/j07/woest/data/ncas-lidar-aerosol-1/ExportData/'
+#netcdf_direc = '/media/sf_Data/cimel-lidar/NetcdfData/'
+netcdf_direc = '/gws/pw/j07/woest/hugo/cimel-netcdf-test/'
 one_day = dt.timedelta(days=1)
 
 # start_dt = dt.datetime(2025,2,17,0,0)
@@ -19,7 +21,7 @@ one_day = dt.timedelta(days=1)
 #     date_list.append(current_dt.date())
 #     current_dt = current_dt + one_day
 
-single_day = dt.date(2025,2,17)
+single_day = dt.date(2023,7,1)
 
 lowest_gate = 300. # metres
 highest_gate = 100000. # metres
@@ -27,9 +29,11 @@ highest_gate = 100000. # metres
 date_list = [single_day]
 
 allFiles = []
+use_sub_dir = True
 
 for check_this_day in date_list:
-    ascii_file_format = f'2102-029_{check_this_day:%Y}{check_this_day:%m}{check_this_day:%d}_????.txt'
+    sub_dir = f'{check_this_day:%Y}/{check_this_day:%m}/{check_this_day:%d}/' if use_sub_dir else ''
+    ascii_file_format = sub_dir+f'2102-029_{check_this_day:%Y}{check_this_day:%m}{check_this_day:%d}_????.txt'
     check_path = ascii_direc + ascii_file_format
     print(check_path)
     files_this_day = sorted(glob.glob(check_path))
@@ -79,7 +83,13 @@ instrument_name = 'ncas-lidar-aerosol-1'
 platform_name = 'lyneham'
 
 data_product = 'aerosol-backscatter'
-version_number = 'v0.1'
+version_number = 'v1.0'
+
+lat_lon_string = f'{abs(latitude):0.6f}'+('N' if latitude >= 0 else 'S')+' '+f'{abs(longitude):0.6f}'+('E' if longitude >= 0 else 'W')
+if lat_lon_string == '51.507198N 2.005400W':
+    platform_name = 'lyneham'
+else:
+    platform_name = 'CHECK-PLATFORM'
 
 nc_file_name = instrument_name+'_'+platform_name+'_'+f'{single_day:%Y}{single_day:%m}{single_day:%d}'+'_'+data_product+'_'+version_number+'.nc'
 
@@ -97,9 +107,6 @@ end_time_string = lidar_time_dt[-1].strftime('%Y-%m-%dT%H:%M:%S')
 
 print(start_time_string,end_time_string)
 
-lat_lon_string = f'{abs(latitude):0.6f}'+('N' if latitude >= 0 else 'S')+' '+f'{abs(longitude):0.6f}'+('E' if longitude >= 0 else 'W')
-
-
 print(str(lat_lon_string))
 
 dataset_out.Conventions = 'CF-1.6, NCAS-AMF-2.0.0'
@@ -115,9 +122,9 @@ dataset_out.creator_url = 'https://orcid.org/0000-0002-1708-2431'
 dataset_out.institution = 'National Centre for Atmospheric Science (NCAS)'
 dataset_out.processing_software_url = 'https://github.com/ncasuk/ncas-lidar-aerosol-1-software'
 dataset_out.processing_software_version = 'v1.0'
-#dataset_out.calibration_sensitivity = 'ADD OVERLAP INFO'
-#dataset_out.calibration_certification_date = 'ADD OVERLAP INFO'
-#dataset_out.calibration_certification_url = 'Not Available'
+dataset_out.calibration_sensitivity = 'Initial calibration by manufacturer'
+dataset_out.calibration_certification_date = '2022-11-07T00:00:00'
+dataset_out.calibration_certification_url = 'N/A'
 dataset_out.sampling_interval = '60 second'
 dataset_out.averaging_interval = '60 second'
 dataset_out.laser_wavelength = '355 nm'
@@ -130,13 +137,13 @@ dataset_out.sampling_frequency = '60 s'
 dataset_out.product_version = version_number
 dataset_out.processing_level = 1
 dataset_out.last_revised_date = current_time_string
-dataset_out.project = 'AMOF Operation'
-dataset_out.project_principal_investigator = 'Dr Hugo Ricketts'
-dataset_out.project_principal_investigator_email = 'hugo.ricketts@ncas.ac.uk'
-dataset_out.project_principal_investigator_url = 'https://orcid.org/0000-0002-1708-2431'
+dataset_out.project = 'WesCon – Observing the Evolving Structures of Turbulence (WOEST)'
+dataset_out.project_principal_investigator = 'Dr Ryan Neely III'
+dataset_out.project_principal_investigator_email = 'ryan.neely@ncas.ac.uk'
+dataset_out.project_principal_investigator_url = 'https://orcid.org/0000-0003-4560-4812'
 dataset_out.licence = 'Data usage licence - UK Government Open Licence agreement: http://www.nationalarchives.gov.uk/doc/open-government-licence'
 dataset_out.acknowledgement = 'Acknowledgement of NCAS as the data provider is required whenever and wherever these data are used'
-dataset_out.platform = 'lyneham'
+dataset_out.platform = platform_name
 dataset_out.platform_type = 'stationary_platform'
 dataset_out.deployment_mode = 'land'
 dataset_out.title = 'Time series profiles of normalized range corrected signal'
@@ -145,10 +152,10 @@ dataset_out.time_coverage_start = start_time_string
 dataset_out.time_coverage_end = end_time_string
 dataset_out.geospatial_bounds = lat_lon_string
 dataset_out.platform_altitude = m['altitude']+' m'
-dataset_out.location_keywords = 'Chilbolton, CAO'
-dataset_out.amf_vocabularies_release = 'https://github.com/ncasuk/AMF_CVs/releases/tag/v1.0.0'
-dataset_out.history = end_time_string+' - Data processed and overlap corrected on the ceilometer.'
-dataset_out.comment = 'Analysis file (testing AMF format)'
+dataset_out.location_keywords = platform_name
+dataset_out.amf_vocabularies_release = 'https://github.com/ncasuk/AMF_CVs/releases/tag/v2.0.0'
+dataset_out.history = end_time_string+' - v1.0: Initial release. Overlap corrected raw backscatter data only.'
+dataset_out.comment = 'Aerosol backscatter and cloud base to follow. Contact provider if required for specific days.'
 
 # Dimensions
 time_dim = dataset_out.createDimension('time',len(lidar_time_dt))
