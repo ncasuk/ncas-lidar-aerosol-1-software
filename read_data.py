@@ -100,7 +100,7 @@ def read_file(filename):
             }
         elif line.split(column_separator)[0] == "DP":
             id_channel, time, nbr_pulse, profile_duration, out_value_type, after_pulse_corrected, measurements, sky_background, error_warnings = read_dp(line, column_separator)
-            print("DP", id_channel, time)
+            #print("DP", id_channel, time)
             dt_time = start_of_time + dt.timedelta(days = float(time)-1)
             data_dict[id_channel]["DP"]["data"] = (
                 np.vstack((data_dict[id_channel]["DP"]["data"], measurements))

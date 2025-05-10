@@ -21,6 +21,9 @@ one_day = dt.timedelta(days=1)
 
 single_day = dt.date(2025,2,17)
 
+lowest_gate = 300. # metres
+highest_gate = 100000. # metres
+
 date_list = [single_day]
 
 allFiles = []
@@ -37,24 +40,37 @@ print(allFiles)
 currentFile = allFiles[0]
 d, m = read_data.read_file(currentFile)
 
-back_green_para = d['1']['DP']['data']
-back_green_perp = d['2']['DP']['data']
-back_ir = d['11']['DP']['data']
-
 lidar_time_dt = np.array(d['1']['DP']['time'])
-lidar_range_green = d['1']['lidar_range']
-lidar_range_ir = d['11']['lidar_range']
+lidar_range_green_raw = d['1']['lidar_range']
+lidar_range_ir_raw = d['11']['lidar_range']
 latitude = float(m['latitude'])
 longitude = float(m['longitude'])
 
+# Find lowest gate
+#lowest_gate_green = (np.abs(d['1']['lidar_range']-lowest_gate)).argmin()
+#lowest_gate_ir = (np.abs(d['11']['lidar_range']-lowest_gate)).argmin()
+valid_gates_green = np.where((lidar_range_green_raw >= lowest_gate) & (lidar_range_green_raw <= highest_gate))
+valid_gates_ir = np.where((lidar_range_ir_raw >= lowest_gate) & (lidar_range_ir_raw <= highest_gate))
+
+lidar_range_green = lidar_range_green_raw[valid_gates_green]
+lidar_range_ir = lidar_range_ir_raw[valid_gates_ir]
+print(np.shape(d['1']['DP']['data']))
+back_green_para = d['1']['DP']['data'][:,valid_gates_green]
+back_green_perp = d['2']['DP']['data'][:,valid_gates_green]
+back_ir = d['11']['DP']['data'][:,valid_gates_ir]
+
+counter = 1
+
 if len(allFiles) > 1:
     for currentFile in range(1, len(allFiles)):
+        counter = counter + 1
+        print(allFiles[currentFile],' ',currentFile,'/',len(allFiles))
         d, m = read_data.read_file(allFiles[currentFile])
 
         lidar_time_dt = np.concatenate((lidar_time_dt,d['1']['DP']['time']))
-        back_green_para = np.concatenate((back_green_para,d['1']['DP']['data']))
-        back_green_perp = np.concatenate((back_green_perp,d['2']['DP']['data']))
-        back_ir = np.concatenate((back_ir,d['11']['DP']['data']))
+        back_green_para = np.concatenate((back_green_para,d['1']['DP']['data'][:,valid_gates_green]))
+        back_green_perp = np.concatenate((back_green_perp,d['2']['DP']['data'][:,valid_gates_green]))
+        back_ir = np.concatenate((back_ir,d['11']['DP']['data'][:,valid_gates_ir]))
 
 print(len(lidar_time_dt))
 print(len(allFiles))
@@ -166,8 +182,8 @@ latitudes.units = 'degrees_north'
 latitudes.standard_name = 'latitude'
 latitudes.long_name = 'Latitude'
 latitudes.axis = 'Y'
-latitudes.valid_min = latitude
-latitudes.valid_max = latitude
+latitudes.valid_min = np.float32(latitude)
+latitudes.valid_max = np.float32(latitude)
 latitudes.cell_methods = 'time: point'
 
 longitudes = dataset_out.createVariable('longitude', np.float32, ('longitude',))
@@ -177,8 +193,8 @@ longitudes.units = 'degrees_east'
 longitudes.standard_name = 'longitude'
 longitudes.long_name = 'Longitude'
 longitudes.axis = 'X'
-longitudes.valid_min = longitude # f'{abs(longitude):0.6f}'
-longitudes.valid_max = longitude # f'{abs(longitude):0.6f}'
+longitudes.valid_min = np.float32(longitude) # f'{abs(longitude):0.6f}'
+longitudes.valid_max = np.float32(longitude) # f'{abs(longitude):0.6f}'
 longitudes.cell_methods = 'time: point'
 
 
@@ -249,7 +265,7 @@ second.units = '1'
 second.standard_name = ''
 second.long_name = 'Second'
 second.valid_min = 0
-second.valid_max = 59.99999
+second.valid_max = np.float32(59.99999)
 
 altitudes_green = dataset_out.createVariable('altitude_green', np.float32, ('altitude_green',), fill_value=-1.00E+20)
 altitudes_green.type = 'float32'
@@ -258,8 +274,8 @@ altitudes_green.units = 'm'
 altitudes_green.standard_name = 'altitude'
 altitudes_green.long_name = 'Geometric height above geoid (WGS84).'
 altitudes_green.axis = 'Z'
-altitudes_green.valid_min = min(lidar_range_green)
-altitudes_green.valid_max = max(lidar_range_green)
+altitudes_green.valid_min = np.float32(min(lidar_range_green))
+altitudes_green.valid_max = np.float32(max(lidar_range_green))
 altitudes_green.coordinates = 'latitude longitude'
 
 altitudes_ir = dataset_out.createVariable('altitude_ir', np.float32, ('altitude_ir',), fill_value=-1.00E+20)
@@ -269,8 +285,8 @@ altitudes_ir.units = 'm'
 altitudes_ir.standard_name = 'altitude'
 altitudes_ir.long_name = 'Geometric height above geoid (WGS84).'
 altitudes_ir.axis = 'Z'
-altitudes_ir.valid_min = min(lidar_range_ir)
-altitudes_ir.valid_max = max(lidar_range_ir)
+altitudes_ir.valid_min = np.float32(min(lidar_range_ir))
+altitudes_ir.valid_max = np.float32(max(lidar_range_ir))
 altitudes_ir.coordinates = 'latitude longitude'
 
 green_para_powers = dataset_out.createVariable('range_squared_corrected_backscatter_power_green_para', np.float64, ('time','altitude_green'), fill_value=-1.00E+20)
@@ -314,5 +330,3 @@ dataset_out['range_squared_corrected_backscatter_power_green_perp'][:] = back_gr
 dataset_out['range_squared_corrected_backscatter_power_ir'][:] = back_ir
 dataset_out.close()
 
-print(back_green_para[0,0:10])
-print(type(back_green_para))
