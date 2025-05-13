@@ -38,11 +38,11 @@ def save_one_day(this_dt):
         sub_dir = f'{check_this_day:%Y}/{check_this_day:%m}/{check_this_day:%d}/' if use_sub_dir else ''
         ascii_file_format = sub_dir+f'2102-029_{check_this_day:%Y}{check_this_day:%m}{check_this_day:%d}_????.txt'
         check_path = ascii_direc + ascii_file_format
-        print(check_path)
+        print('Check path:',check_path)
         files_this_day = sorted(glob.glob(check_path))
         allFiles.extend(files_this_day)
 
-    print(allFiles)
+    # print(allFiles)
 
     currentFile = allFiles[0]
     d, m = read_data.read_file(currentFile)
@@ -61,7 +61,7 @@ def save_one_day(this_dt):
 
     lidar_range_green = lidar_range_green_raw[valid_gates_green]
     lidar_range_ir = lidar_range_ir_raw[valid_gates_ir]
-    print(np.shape(d['1']['DP']['data']))
+
     back_green_para = d['1']['DP']['data'][:,valid_gates_green]
     back_green_perp = d['2']['DP']['data'][:,valid_gates_green]
     back_ir = d['11']['DP']['data'][:,valid_gates_ir]
@@ -79,8 +79,8 @@ def save_one_day(this_dt):
             back_green_perp = np.concatenate((back_green_perp,d['2']['DP']['data'][:,valid_gates_green]))
             back_ir = np.concatenate((back_ir,d['11']['DP']['data'][:,valid_gates_ir]))
 
-    print(len(lidar_time_dt))
-    print(len(allFiles))
+    print('Number of profiles:',len(lidar_time_dt))
+    print('Number of files:', len(allFiles))
 
     instrument_name = 'ncas-lidar-aerosol-1'
     platform_name = 'lyneham'
@@ -96,7 +96,7 @@ def save_one_day(this_dt):
 
     nc_file_name = instrument_name+'_'+platform_name+'_'+f'{single_day:%Y}{single_day:%m}{single_day:%d}'+'_'+data_product+'_'+version_number+'.nc'
 
-    print(nc_file_name)
+    print('Target NetCDF:',nc_file_name)
 
     dataset_out = nc.Dataset(netcdf_direc+nc_file_name, 'w', format='NETCDF4_CLASSIC')
 
@@ -108,9 +108,9 @@ def save_one_day(this_dt):
     start_time_string = lidar_time_dt[0].strftime('%Y-%m-%dT%H:%M:%S')
     end_time_string = lidar_time_dt[-1].strftime('%Y-%m-%dT%H:%M:%S')
 
-    print(start_time_string,end_time_string)
+    print('Time range:',start_time_string,end_time_string)
 
-    print(str(lat_lon_string))
+    print('Location:',str(lat_lon_string))
 
     dataset_out.Conventions = 'CF-1.6, NCAS-AMF-2.0.0'
     dataset_out.source = 'NCAS Aerosol Lidar unit 1'
@@ -339,3 +339,12 @@ def save_one_day(this_dt):
     dataset_out['range_squared_corrected_backscatter_power_green_perp'][:] = back_green_perp
     dataset_out['range_squared_corrected_backscatter_power_ir'][:] = back_ir
     dataset_out.close()
+
+
+if __name__ == "__main__":
+    import sys
+
+    # Example date time string: 202409130200 is 13/09/2024 02:00
+    dt_string_format = "%Y%m%d"
+    start_dt = dt.datetime.strptime(sys.argv[1], dt_string_format)
+    save_one_day(start_dt)
