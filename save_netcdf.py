@@ -333,8 +333,8 @@ def save_one_day(this_dt):
     back_ir_powers.coordinates = 'latitude longitude'
 
     dataset_out['time'][:] = nc.date2num(lidar_time_dt, dataset_out['time'].units)
-    dataset_out['altitude_green'][:] = lidar_range_green
-    dataset_out['altitude_ir'][:] = lidar_range_ir
+    dataset_out['altitude_green'][:] = lidar_range_green + m['altitude']
+    dataset_out['altitude_ir'][:] = lidar_range_ir + m['altitude']
     dataset_out['range_squared_corrected_backscatter_power_green_para'][:] = back_green_para
     dataset_out['range_squared_corrected_backscatter_power_green_perp'][:] = back_green_perp
     dataset_out['range_squared_corrected_backscatter_power_ir'][:] = back_ir
