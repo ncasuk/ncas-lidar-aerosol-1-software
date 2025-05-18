@@ -1,12 +1,20 @@
 import pandas as pd
 import numpy as np
 
-def read_sonde(lidar_altitude):
+def read_sonde(lidar_altitude, sonde_file, sonde_file_type):
 
-    sonde_file = '/media/sf_Data/cimel-lidar/sonde/wy-camborne-20250217_12.txt'
+    #sonde_file = '/media/sf_Data/cimel-lidar/sonde/wy-camborne-20250217_12.txt'
 
-    sonde_vars = ['PRES','HGHT','TEMP','DWPT','RELH','MIXR','DRCT','SKNT','THTA','THTE','THTV']
-    sonde_data = pd.read_csv(sonde_file, skiprows=7, sep='\\s+', names=sonde_vars)
+    if sonde_file_type == 'new_wyoming':
+        #sonde_vars = ['time','longitude','latitude','pressure_hPa','geopotential height_m','temperature_C',
+        #              'dew point temperature_C','ice point temperature_C','relative humidity_%','humidity wrt ice_%',
+        #              'mixing ratio_g/kg','wind direction_degree','wind speed_m/s']
+        sonde_data = pd.read_csv(sonde_file)
+        sonde_data.rename(columns={'pressure_hPa': 'PRES', 'geopotential height_m': 'HGHT', 'temperature_C': 'TEMP',
+                                   'dew point temperature_C': 'DWPT'}, inplace=True)
+    elif sonde_file_type == 'old_wyoming':
+        sonde_vars = ['PRES','HGHT','TEMP','DWPT','RELH','MIXR','DRCT','SKNT','THTA','THTE','THTV']
+        sonde_data = pd.read_csv(sonde_file, skiprows=7, sep='\\s+', names=sonde_vars)
 
     t0 = 273.15 # K
 
