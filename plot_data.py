@@ -4,9 +4,22 @@ import numpy as np
 import processors.read_sonde as read_sonde
 import processors.ray_calc as ray_calc
 
-d,m = read_data.read_file("/media/sf_Data/cimel-lidar/ExportData/2102-029_20250217_0250.txt")
+data_file = "/gws/pw/j07/woest/data/ncas-lidar-aerosol-1/ExportData/2023/06/23/2102-029_20230623_0030.txt"
+#data_file = "/media/sf_Data/cimel-lidar/ExportData/2102-029_20250217_0250.txt"
+
+sonde_file = "/gws/pw/j07/woest/hugo/sondes/2023060100-03882.csv"
+sonde_file_type = "new_wyoming"
+
 channel = '11'
-nair = read_sonde.read_sonde(d[channel]['lidar_range']+float(m['altitude']))
+norm_low_range = 15000.
+
+d,m = read_data.read_file(data_file)
+
+print(d[channel]['lidar_range'][750:800])
+
+lidar_alt = d[channel]['lidar_range']+float(m['altitude'])
+
+nair = read_sonde.read_sonde(lidar_alt, sonde_file, sonde_file_type)
 
 mol_signal = ray_calc.ray_calc(d[channel]['receive_wavelength_nanometres'], nair, d[channel]['lidar_range'])
 
