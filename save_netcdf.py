@@ -91,8 +91,9 @@ def save_one_day(this_dt, plot_data=False):
     data_product = 'aerosol-backscatter'
     version_number = 'v1.0'
 
-    lat_lon_string = f'{abs(latitude):0.6f}'+('N' if latitude >= 0 else 'S')+' '+f'{abs(longitude):0.6f}'+('E' if longitude >= 0 else 'W')
-    if lat_lon_string == '51.507198N 2.005400W':
+    # lat_lon_string = f'{abs(latitude):0.6f}'+('N' if latitude >= 0 else 'S')+' '+f'{abs(longitude):0.6f}'+('E' if longitude >= 0 else 'W')
+    lat_lon_string = f'{latitude:0.6f}N {longitude:0.6f}E'
+    if lat_lon_string == '51.507198N -2.005400E':
         platform_name = 'lyneham'
     else:
         platform_name = 'CHECK-PLATFORM'
