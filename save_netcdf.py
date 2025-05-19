@@ -108,9 +108,14 @@ def save_one_day(this_dt, plot_data=False):
     pulse_lengths = {'1':'15 ns', '2':'15 ns', '11':'200 ns'}
     polarisations = {'1':'co-polar', '2':'cross-polar', '11':'co-polar'}
 
+    back_green_para[np.where(back_green_para <= 0.)] = np.nan
+    back_green_perp[np.where(back_green_perp <= 0.)] = np.nan
+    back_ir[np.where(back_ir <= 0.)] = np.nan
+
     back_green_para = np.log(back_green_para)
     back_green_perp = np.log(back_green_perp)
     back_ir = np.log(back_ir)
+
     altitude_green = lidar_range_green + float(m['altitude'])
     altitude_ir = lidar_range_ir + float(m['altitude'])
     lidar_time_pd = pd.Series(lidar_time_dt)
